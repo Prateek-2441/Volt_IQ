@@ -1,18 +1,30 @@
-
-import streamlit as st
 import joblib
 import numpy as np
-import os
-import plotly.graph_objects as go
+import streamlit as st
 
-st.set_page_config(
-    page_title="VOLT//IQ | Battery Intelligence",
-    page_icon="⚡",
-    layout="wide"
-)
+
+class _SingleClassSVMFallback:
+    def __init__(self, cls_idx, n_classes):
+        self.cls_idx = cls_idx
+        self.n_classes = n_classes
+        self.classes_ = np.array([cls_idx])
+
+    def predict(self, X):
+        return np.full(len(X), self.cls_idx, dtype=int)
+
+    def predict_proba(self, X):
+        probs = np.zeros((len(X), self.n_classes), dtype=float)
+        probs[:, self.cls_idx] = 1.0
+        return probs
+
 
 # Load trained models
 @st.cache_resource
+def load_models():
+    return joblib.load("models/ev_battery_models.joblib")
+
+
+models = load_models()
 def load_models():
     return joblib.load("models/ev_battery_models.joblib")
 
